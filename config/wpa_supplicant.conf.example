@@ -1,4 +1,4 @@
-ctrl_interface=/var/run/wpa_supplicant
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 
 network={
   ssid="SSID HERE"
