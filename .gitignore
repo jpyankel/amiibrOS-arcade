@@ -1,0 +1,10 @@
+# Ignore manual image download
+img/*.img
+
+# Ignore build files
+# TODO
+
+# Ignore personal settings and apps (privacy)
+config/wpa_supplicant.conf
+app/*
+!app/README.md
