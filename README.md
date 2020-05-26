@@ -5,6 +5,7 @@ TODO description
 Prerequisites:
 * Internet access and ability to download large files
 * SD-card with at least ??? GB storage
+* qemu-user-static installed
 
 Steps:
 1. Download Raspbian Lite and place in img/ folder

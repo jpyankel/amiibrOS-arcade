@@ -1,0 +1,30 @@
+# the default GPU memory maximum is 64MB.
+# this is okay since we do not use camera or intensive graphics;
+#   emulation is mostly CPU
+# gpu_mem=64
+
+# force normal HDMI mode (will also enable audio over HDMI)
+hdmi_drive=2
+
+# force HDMI even when no HDMI monitor is detected
+hdmi_force_hotplug=1
+
+# flag as monitor-type spec (DMT)
+hdmi_group=2
+
+# force HDMI to output WXGA+ (1440 x 900)
+hdmi_mode=46
+
+# disables rainbow splash screen on boot
+disable_splash=1
+
+# enable spi interface (used in amiibo scanner)
+dtparam=spi=on
+
+# Enable audio (loads snd_bcm2835)
+dtparam=audio=on
+
+[pi4]
+# Enable DRM VC4 V3D driver on top of the dispmanx display stack
+dtoverlay=vc4-fkms-v3d
+max_framebuffers=2
