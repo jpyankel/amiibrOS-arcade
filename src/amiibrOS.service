@@ -1,0 +1,13 @@
+[Unit]
+Description=amiibrOS system software
+After=network.target bluetooth.target
+Before=getty@tty1.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/amiibrOS/amiibrOS.sh
+TimeoutStartSec=0
+StandardInput=tty
+
+[Install]
+WantedBy=multi-user.target

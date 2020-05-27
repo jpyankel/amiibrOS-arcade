@@ -1,0 +1,2 @@
+# pygame is already installed
+pygame-gui==0.5.6
