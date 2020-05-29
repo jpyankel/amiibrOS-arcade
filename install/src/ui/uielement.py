@@ -43,6 +43,9 @@ class UIElement():
     """
     self.surface.set_alpha((1-te/td)*255)
 
+  def setAlpha(self, alpha):
+    self.surface.set_alpha(alpha)
+
   def addChild(self, child):
     """ Adds a child object to this UI elements sub-objects list.
     Sub-objects are drawn in front when draw() is called, and are positioned

@@ -7,7 +7,12 @@ class TitleScene (Scene):
   def __init__(self):
     super().__init__()
     self.scene_objs.append(BG())
-    self.scene_objs.append(Logo((0,0)))
+
+    # set logo to be transparent at first
+    logo = Logo((188,75))
+    logo.setAlpha(0)
+    self.scene_objs.append(logo)
+
     # TODO add buttons which are hidden by default
     self.timeTracker = 0.0
     self.fadeIn = True
@@ -22,5 +27,6 @@ class TitleScene (Scene):
         self.fadeIn = False
         self.timeTracker = logoFadeInDuration
         self.scene_objs[1].fadeIn(logoFadeInDuration, logoFadeInDuration)
+        self.scene_objs[1].switchToTransparent()
 
     #TODO handle inputs and scene changes
