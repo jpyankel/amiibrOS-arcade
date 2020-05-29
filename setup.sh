@@ -1,3 +1,8 @@
+# === Constants ===
+$mntpath="/mnt/rpi"
+$installpath="/usr/bin/amiibrOS"
+# === ===
+
 echo "Running image setup..."
 
 # === check for arguments ===
@@ -24,11 +29,11 @@ fi
 img=$(ls img/*.img)
 echo "Image found: $img"
 
-# === make sure nothing is mounted in /mnt/rpi yet ===
-echo -e "Checking /mnt/rpi for previous mounts..."
-mkdir -p /mnt/rpi
-if $(findmnt -rn -o TARGET /mnt/rpi >/dev/null); then
-  echo -e "Error: There is already something mounted in /mnt/rpi\
+# === make sure nothing is mounted in $mntpath yet ===
+echo -e "Checking $mntpath for previous mounts..."
+mkdir -p $mntpath
+if $(findmnt -rn -o TARGET $mntpath >/dev/null); then
+  echo -e "Error: There is already something mounted in $mntpath\
     \nPlease unmount it before re-running setup"
   exit
 fi
@@ -77,41 +82,39 @@ linuxoffset=$((linuxstart * sectorsize))
 echo "- Linux partition offset: $linuxstart B"
 
 echo "Mounting linux partition..."
-mount -t ext4 -o loop,offset=$linuxoffset $1 /mnt/rpi
+mount -t ext4 -o loop,offset=$linuxoffset $1 $mntpath
 
 echo "Mounting boot partition..."
-mount -t vfat -o loop,offset=$bootoffset,sizelimit=$bootsize $1 /mnt/rpi/boot
+mount -t vfat -o loop,offset=$bootoffset,sizelimit=$bootsize $1 $mntpath/boot
 
 # === install amiibrOS system software ===
 echo "Transfering amiibrOS system software..."
 
-mkdir -p /mnt/rpi/usr/bin/amiibrOS
-cp src/requirements.txt /mnt/rpi/usr/bin/amiibrOS/
-cp src/amiibrOS.sh /mnt/rpi/usr/bin/amiibrOS/
-cp src/main.py /mnt/rpi/usr/bin/amiibrOS/
-cp -r src/resources /mnt/rpi/usr/bin/amiibrOS/
+mkdir -p $mntpath/usr/bin/amiibrOS
+cp -r install/* $mntpath/$installpath/
 
 # enable console output of systemd service messages
-cp src/system.conf /mnt/rpi/etc/systemd/
+ln -sf $installpath/systemd/system.conf $mntpath/etc/systemd/
 
 # install amiibrOS systemd service
-cp src/amiibrOS.service /mnt/rpi/etc/systemd/system/
+ln -s $installpath/systemd/amiibrOS.service $mntpath/etc/systemd/system/
+
 # ensure amiibrOS systemd service is enabled by default
-mkdir -p /mnt/rpi/etc/systemd/system/multi-user.target.wants
-ln -s /etc/systemd/system/amiibrOS.service \
-  /mnt/rpi/etc/systemd/system/multi-user.target.wants/
+mkdir -p $mntpath/etc/systemd/system/multi-user.target.wants
+ln -s $installpath/systemd/amiibrOS.service \
+  $mntpath/etc/systemd/system/multi-user.target.wants/
 
 # === copy various user configurations and apps ===
 echo "Transfering user config&apps..."
-cp config/config.txt /mnt/rpi/boot/
-cp config/wpa_supplicant.conf /mnt/rpi/boot/
+cp config/config.txt $mntpath/boot/
+cp config/wpa_supplicant.conf $mntpath/boot/
 
 # === create the first-time init file ===
-touch /mnt/rpi/first-run
+touch $mntpath/first-run
 
 # unmount SD card
 echo "Unmounting..."
-umount /mnt/rpi/boot
-umount /mnt/rpi
+umount $mntpath/boot
+umount $mntpath
 
 echo "setup.sh completed successfully!"

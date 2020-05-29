@@ -1,5 +1,4 @@
 import pygame
-import pygame_gui
 import pygame.joystick
 
 pygame.init()
@@ -40,7 +39,6 @@ textPrint = TextPrint()
 res = (1440, 900)
 
 win_surf = pygame.display.set_mode(res, pygame.FULLSCREEN)
-ui_mgr = pygame_gui.UIManager(res)
 
 # --- UI Elements ---
 #logo = pygame.image.load("/usr/bin/amiibrOS/resources/fullscreen-logo.png")
@@ -48,11 +46,6 @@ ui_mgr = pygame_gui.UIManager(res)
 bg = pygame.Surface(res)
 bg.fill(pygame.Color("#E8E8E8"))
 #bg.blit(logo, (0, 0))
-
-hello_button = pygame_gui.elements.UIButton(
-  relative_rect=pygame.Rect((350, 275), (100, 50)),
-  text="Say Hello",
-  manager=ui_mgr)
 # --- ---
 
 clock = pygame.time.Clock()
@@ -70,21 +63,10 @@ while is_running:
       if event.key == pygame.K_ESCAPE:
         is_running = False
 
-    if event.type == pygame.USEREVENT:
-      if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-        if event.ui_element == hello_button:
-            print("Hello World!")
-
-    ui_mgr.process_events(event)
-
   # --- ---
-
-  # update UI state
-  ui_mgr.update(dt)
 
   # --- Draw loop ---
   win_surf.blit(bg, (0, 0))
-  ui_mgr.draw_ui(win_surf)
 
   # --- More taken code ---
   textPrint.reset()

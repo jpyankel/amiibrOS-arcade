@@ -5,7 +5,7 @@ Before=getty@tty1.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/amiibrOS/amiibrOS.sh
+ExecStart=/usr/bin/amiibrOS/systemd/amiibrOS.sh
 TimeoutStartSec=0
 StandardInput=tty
 
