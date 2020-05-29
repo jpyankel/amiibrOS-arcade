@@ -1,6 +1,9 @@
 # Don't include large .img files from testing
 img/*.img
 
+# Ignore all python cache stuff
+*.pyc
+
 # Ignore personal settings and apps (privacy)
 config/wpa_supplicant.conf
 app/*
