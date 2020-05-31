@@ -62,6 +62,9 @@ while is_running:
     if event.type == pygame.KEYDOWN:
       if event.key == pygame.K_ESCAPE:
         is_running = False
+      if event.key == pygame.K_r:
+        pygame.joystick.quit()
+        pygame.joystick.init()
 
   # --- ---
 
