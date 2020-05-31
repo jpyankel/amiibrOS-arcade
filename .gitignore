@@ -8,3 +8,4 @@ img/*.img
 config/wpa_supplicant.conf
 app/*
 !app/README.md
+install/data/*.config
