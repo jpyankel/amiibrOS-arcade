@@ -11,56 +11,31 @@ analog_tolerance = 0.5
 
 class InputManager:
   def __init__(self):
-    # this should be updated every frame.
-    # this depends on the controller's configuration as well as current inputs
-    self.processedInputs = {
-      "A" : False,
-      "B" : False,
-      "X" : False,
-      "Y" : False,
-      "Se" : False,
-      "St" : False,
-      "V1" : 0,
-      "H1" : 0
-    }
-
-    # the first joystick ID that inputs an action gets to control the interface
-    self.primary_id = None
-
-    # should we poll to find the primary joystick?
-    self.set_primary = True
-
     # load joystick config files from data/controllers.config
     self.gamepadConfigs = configparser.ConfigParser()
     self.gamepadConfigs.read(str(controller_path))
 
+    # max number of joysticks is 4
     self.joysticks = []
+
+    # list of "pretend" gamepads that hold processed values
+    self.gamepads = []
 
     self.refreshJoysticks()
 
   def update(self, dt):
-    # TODO replace with pygame.event.pump() when we reimplement the below functionality
     for event in pygame.event.get():
-      if event.type == pygame.QUIT:
-        pygame.quit() # TODO HANDLE GRACEFULLY
-
       if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_ESCAPE:
-          pygame.quit() # TODO REMOVE
-
-    if self.set_primary:
-      # Poll any event for the first joystick
-      for joystick in self.joysticks:
-        if joystickAnyInput(joystick):
-          self.primary_id = joystick.get_id()
-          self.set_primary = False
-    elif self.primary_id != None:
-      # Update currently pressed buttons
-      self.updatePrimary()
+        self.handleKeyboard(event)
+      elif event.type in {pygame.JOYAXISMOTION, pygame.JOYHATMOTION,
+                          pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP}:
+        self.handleJoystick(event)
 
   def refreshJoysticks(self):
-    # the primary controller will need to be chosen again
-    self.primary_id = None
+    # disconnect all connected joysticks from the event queue
+    for j in self.joysticks:
+      j.quit()
+    self.joysticks.clear()
 
     # quit then init forces pygame.joystick to check if new joysticks are added
     #   or removed
@@ -68,53 +43,121 @@ class InputManager:
     pygame.joystick.init()
 
     # update list of connected joysticks
-    for js_id in range(pygame.joystick.get_count()):
+    # only enable the first 4 available joysticks
+    for js_id in range(min(pygame.joystick.get_count(), 4)):
       joystick = pygame.joystick.Joystick(js_id)
       joystick.init()
+
+      # add joystick to list of active joysticks
       self.joysticks.append(joystick)
 
-  def resetPrimary (self):
-    self.primary_id = None
-    self.set_primary = True
+      # try to configure virtual gamepad
+      gamepad = GamePad(joystick.get_name(), self.gamepadConfigs)
+      self.gamepads.append(gamepad)
 
-  def hasPrimary (self):
-    return self.primary_id != None
+  def handleKeyboard(self, event):
+    if event.key == pygame.K_ESCAPE:
+      pygame.quit() # TODO Handle gracefully
+    elif event.key == pygame.K_r:
+      print(self.gamepads)
 
-  def updatePrimary (self):
-    joystick = self.joysticks[self.primary_id]
-    config = self.gamepadConfigs[joystick.get_name()]
+  def handleJoystick(self, event):
+    joystick = self.joysticks[event.joy]
+    gamepad = self.gamepads[event.joy]
 
-    # check buttons and axis based on configuration
-    for ctrl in self.processedInputs.keys():
-      # if the ctrl a button (not a joystick)
-      ctrl_id = int(config[ctrl])
-
-      if ctrl != "H1" and ctrl != "V1":
-        self.processedInputs[ctrl] = joystick.get_button(ctrl_id)
-      else:
-        if joystick.get_axis(ctrl_id) > analog_tolerance:
-          self.processedInputs[ctrl] = 1
-        elif joystick.get_axis(ctrl_id) < -analog_tolerance:
-          self.processedInputs[ctrl] = -1
+    if event.type == pygame.JOYAXISMOTION:
+      if abs(event.value) > analog_tolerance:
+        if event.value > 0:
+          gamepad.setAJS(event.axis, 1)
         else:
-          self.processedInputs[ctrl] = 0
+          gamepad.setAJS(event.axis, -1)
+      else:
+          gamepad.setAJS(event.axis, 0)
+    elif event.type == pygame.JOYHATMOTION:
+      gamepad.setDJS(event.hat, event.value)
+    elif event.type == pygame.JOYBUTTONDOWN:
+      gamepad.setBTN(event.button, 1)
+    else:
+      # Event type is JOYBUTTONUP
+      gamepad.setBTN(event.button, 0)
 
-def joystickAnyInput(joystick):
-  """ Returns True if any joystick button or other input is not 0 """
+class GamePad:
+  def __init__(self, name, gamepadConfigs):
+    # When configured, each of these holds a string out of the following:
+    #   A, B, X, Y, L, R, Se, St
+    self.btn_mapping = [None] * 12
 
-  # check all buttons
-  for btn_id in range(joystick.get_numbuttons()):
-    if joystick.get_button(btn_id):
-      return True
+    # When configured, each of these holds a string out of the following:
+    #   AH1, AV1, AH2, AV2
+    self.ajs_mapping = [None] * 4
 
-  # check all analog joysticks
-  for ajs_id in range(joystick.get_numaxes()):
-    if abs(joystick.get_axis(ajs_id)) >= analog_tolerance:
-      return True
+    # When configured, each of these holds a string out of the following:
+    #   D1, D2
+    self.djs_mapping = [None] * 4
 
-  # check all "digital" joysticks
-  for djs_id in range(joystick.get_numhats()):
-    if joystick.get_hat(djs_id) != (0, 0):
-      return True
+    self.current_btn = {
+      "A" : False,
+      "B" : False,
+      "X" : False,
+      "Y" : False,
+      "L" : False,
+      "R" : False,
+      "Se" : False,
+      "St" : False,
+    }
 
-  return False
+    self.current_ajs = {
+      "AH1" : 0,
+      "AV1" : 0,
+      "AH2" : 0,
+      "AV2" : 0,
+    }
+
+    self.current_djs = {
+      "D1" : (0, 0),
+      "D2" : (0, 0),
+    }
+
+    self.configured = False
+
+    self.configureInputMapping(name, gamepadConfigs)
+
+  def configureInputMapping(self, name, gamepadConfigs):
+    config = gamepadConfigs[name]
+
+    if not config:
+      return
+
+    # map buttons
+    for key in self.current_btn.keys():
+      if key in config:
+        self.btn_mapping[int(config[key])] = key
+
+    # map analog joysticks
+    for key in self.current_ajs.keys():
+      if key in config:
+        self.ajs_mapping[int(config[key])] = key
+
+    # map digital joysticks
+    for key in self.current_djs.keys():
+      if key in config:
+        self.djs_mapping[int(config[key])] = key
+
+    self.configured = True
+
+  def setBTN (self, btn, value):
+    if not self.btn_mapping[btn]:
+      return
+    self.current_btn[self.btn_mapping[btn]] = value
+
+  def setAJS (self, axis, value):
+    if not self.ajs_mapping[axis]:
+      return
+    #print("Setting axis", axis, "(", self.ajs_mapping[axis], ") to", value)
+    self.current_ajs[self.ajs_mapping[axis]] = value
+
+  def setDJS (self, hat, value):
+    if not self.djs_mapping[hat]:
+      return
+    #print("Setting hat", hat, "(", self.djs_mapping[hat], ") to", value)
+    self.current_djs[self.djs_mapping[hat]] = value
