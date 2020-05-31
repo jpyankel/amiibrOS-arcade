@@ -49,14 +49,11 @@ class InputManager:
           pygame.quit() # TODO REMOVE
 
     if self.set_primary:
-      print("FINDING JOYSTICKS")
       # Poll any event for the first joystick
       for joystick in self.joysticks:
         if joystickAnyInput(joystick):
           self.primary_id = joystick.get_id()
           self.set_primary = False
-          print("JOYSTICK FOUND:")
-          print(self.joysticks[self.primary_id].get_name())
     elif self.primary_id != None:
       # Update currently pressed buttons
       self.updatePrimary()

@@ -1,7 +1,7 @@
 import pygame
 from .inputmanager import InputManager
 from .ui.drawingconst import *
-    
+
 class SceneManager:
   def __init__(self):
     # the "screen" surface to draw to
@@ -22,7 +22,9 @@ class SceneManager:
     # elasped time in the current transition
     self.tET = 0.0
 
-  def update(self, dt):
+    self.font = pygame.font.Font(None, 30)
+
+  def update(self, dt, fps):
     """ Updates the input manager to receive the latest inputs, then performs
     scene specific logic, then draws the scene to the screen.
 
@@ -43,8 +45,14 @@ class SceneManager:
       self.tET += dt
     else:
       self.scene.checkLogic(self.input_mgr, dt)
-    
+
     self.scene.draw(self.screen)
+
+    if fps != None:
+      fps_overlay = self.font.render(str(int(fps)), True, pygame.Color("black"))
+      # draw FPS average overlay
+      self.screen.blit(fps_overlay, (10,0))
+
     pygame.display.update()
 
   def loadScene(self, next_scene, transitionID=0):
