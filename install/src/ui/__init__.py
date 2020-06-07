@@ -1,3 +1,3 @@
 from .bg import BG
 from .logo import Logo
-from .imgbutton import ImageButton
+from .glowimgbutton import GlowImageButton

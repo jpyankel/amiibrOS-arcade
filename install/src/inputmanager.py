@@ -81,6 +81,15 @@ class InputManager:
       # Event type is JOYBUTTONUP
       gamepad.setBTN(event.button, 0)
 
+  def getConfiguredGamepadCount(self):
+    count = 0
+
+    for gamepad in self.gamepads:
+      if gamepad.isConfigured():
+        count += 1
+
+    return count
+
 class GamePad:
   def __init__(self, name, gamepadConfigs):
     # When configured, each of these holds a string out of the following:
@@ -123,9 +132,10 @@ class GamePad:
     self.configureInputMapping(name, gamepadConfigs)
 
   def configureInputMapping(self, name, gamepadConfigs):
-    config = gamepadConfigs[name]
-
-    if not config:
+    try:
+      config = gamepadConfigs[name]
+    except KeyError:
+      # we cannot run setup
       return
 
     # map buttons
@@ -161,3 +171,6 @@ class GamePad:
       return
     #print("Setting hat", hat, "(", self.djs_mapping[hat], ") to", value)
     self.current_djs[self.djs_mapping[hat]] = value
+
+  def isConfigured (self):
+    return self.configured

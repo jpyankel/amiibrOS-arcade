@@ -37,17 +37,23 @@ class UIElement():
     """
     # calculate this element's offset from its parent
     new_pos = (self.pos[0] + offset[0], self.pos[1] + offset[1])
+    print("parent!", self.name)
 
     if self.ppa_render:
       copy_img = self.ppa_surf.copy()
       copy_img.blit(self.surf, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+      # draw the copy surface onto the parent surface
       parent.blit(copy_img, new_pos)
+      # tell other sub-objects to draw onto the copy surface, to be drawn later
+      #   onto the parent surface
+      for child in self.children:
+        child.draw(parent, new_pos)
     else:
+      # draw this surface onto the parent surface
       parent.blit(self.surf, new_pos)
-
-    # tell other sub-objects to draw onto this surface
-    for child in self.children:
-      child.draw(self.surf, new_pos)
+      # tell other sub-objects to draw onto the parent overtop this one
+      for child in self.children:
+        child.draw(parent, new_pos)
 
   def fadeIn(self, te, td):
     """ Fades in opacity proportional to time elapsed.
@@ -78,7 +84,7 @@ class UIElement():
     """
     self.ppa_surf = pygame.image.load(imgpath).convert_alpha()
     self.surf = pygame.Surface(self.ppa_surf.get_rect().size, pygame.SRCALPHA)
-    
+
     self.ppa_render = True
 
     # start out at 100% opacity
