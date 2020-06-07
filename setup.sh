@@ -1,6 +1,6 @@
 # === Constants ===
-$mntpath="/mnt/rpi"
-$installpath="/usr/bin/amiibrOS"
+mntpath="/mnt/rpi"
+installpath="/usr/bin/amiibrOS"
 # === ===
 
 echo "Running image setup..."
