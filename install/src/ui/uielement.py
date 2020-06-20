@@ -37,7 +37,6 @@ class UIElement():
     """
     # calculate this element's offset from its parent
     new_pos = (self.pos[0] + offset[0], self.pos[1] + offset[1])
-    print("parent!", self.name)
 
     if self.ppa_render:
       copy_img = self.ppa_surf.copy()
