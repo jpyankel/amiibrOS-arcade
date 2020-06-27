@@ -9,15 +9,6 @@ controller_path = data_path / "gamepads.config"
 # tolerance before abs() of any joystick axis value is interpreted as 1 or -1
 analog_tolerance = 0.5
 
-# time the input has to be held to enter input-repeat mode 
-INPUT_HOLD_TO_REPEAT = 1000
-
-# time inbetween each consecutive input when in input-repeat mode
-INPUT_REPEAT_DELAY = 500
-
-input_held_event = pygame.event.custom_type()
-input_held_repeat_event = pygame.event.custom_type()
-
 class InputManager:
   def __init__(self):
     # load joystick config files from data/controllers.config
@@ -33,16 +24,13 @@ class InputManager:
     self.refreshJoysticks()
 
   def update(self, dt):
+
     for event in pygame.event.get():
       if event.type == pygame.KEYDOWN:
         self.handleKeyboard(event)
       elif event.type in {pygame.JOYAXISMOTION, pygame.JOYHATMOTION,
                           pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP}:
         self.handleJoystick(event)
-      elif event.type == input_held_event:
-        self.handleInputHeldEvent()
-      elif event.type == input_held_repeat_event:
-        self.handleInputHeldRepeatEvent()
 
   def refreshJoysticks(self):
     # disconnect all connected joysticks from the event queue
@@ -96,39 +84,6 @@ class InputManager:
       # Event type is JOYBUTTONUP
       gamepad.setBTN(event.button, 0)
 
-  def handleInputHeldEvent(self):
-    # disable old timer
-    pygame.time.set_timer(input_held_event, 0)
-    
-    held_gamepad = None
-    # Find first controller with input_held_mode active and check if the input is still held
-    for gamepad in self.gamepads:
-      if gamepad.input_held:
-        held_gamepad = gamepad
-        break
-    
-    if held_gamepad != None:
-      # Start the timer for input held repeat mode
-      pygame.time.set_timer(input_held_repeat_event, INPUT_REPEAT_DELAY)
-  
-  def handleInputHeldRepeatEvent(self):
-    held_gamepad = None
-    # Find first controller with input_held_mode active and check if the input is still held
-    for gamepad in self.gamepads:
-      if gamepad.input_held:
-        held_gamepad = gamepad
-        break
-    
-    if held_gamepad != None:
-      # toggle its direction from neutral to held_direction
-      if held_gamepad.current_direction == (0, 0):
-        held_gamepad.current_direction = held_gamepad.held_direction
-      else:
-        held_gamepad.current_direction = (0, 0)
-    else:
-      # no more held direction, quit input repeat delay mode
-      pygame.time.set_timer(input_held_repeat_event, 0)
-
   def getConfiguredGamepadCount(self):
     count = 0
 
@@ -180,14 +135,14 @@ class GamePad:
     self.configureInputMapping(name, gamepadConfigs)
 
     # Prioritizes digital joysticks, but is essentially an OR of the analog and digital joysticks
-    #   (shows any 1 or -1 over 0). It is also processed so that inputs are not repeated without
-    #   a small delay.
+    #   (shows any 1 or -1 over 0). It is also processed so that inputs are not repeated when the
+    #   joystick is held in a non-neutral position
     self.current_direction = (0, 0)
 
     # are we in input held mode?
     self.input_held = False
 
-    # if we are in input held mode, which way is it held?
+    # when input_held == true, this variable holds the direction the joystick is being held
     self.held_direction = (0, 0)
 
   def configureInputMapping(self, name, gamepadConfigs):
@@ -252,7 +207,7 @@ class GamePad:
       direction = self.current_djs[key]
       if abs(direction[0]) > 0:
         horizontal_dir = direction[0]
-      else if abs(direction[1] > 0): # we can use `else if` since only 1 direction changes per event
+      elif abs(direction[1] > 0): # we can use `else if` since only 1 direction changes per event
         vertical_dir = direction
 
     new_direction = (horizontal_dir, vertical_dir)
@@ -265,13 +220,12 @@ class GamePad:
       if new_direction != self.held_direction:
         self.input_held = False
         self.current_direction = new_direction
-
       # otherwise, input_held is still true, do nothing (other methods take over from here)
-    else if new_direction != (0, 0) && new_direction == self.current_direction:
+    elif new_direction != (0, 0) and new_direction == self.current_direction:
       self.input_held = True
-      pygame.time.set_timer(input_held_event, INPUT_HOLD_TO_REPEAT)
       # since input is held, we start the input-held timer and set the direction to neutral (so
       #   that the user doesn't fly through the menus by accident)
+      self.held_direction = new_direction;
       self.current_direction = (0, 0)
     else:
       self.current_direction = new_direction
