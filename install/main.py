@@ -1,38 +1,31 @@
 import pygame
-from src.scenemanager import SceneManager
-from src.scene import TitleScene
+from input_manager import InputManager
+from state_engine import StateEngine
+from draw_manager import DrawManager
 
-# TODO
-# blank -> title
-# title -(noctlr)> nocontroller
-# title -(unconfigctrl)> unconfiguredcontroller
-# title -(animcomplete)> main
-# main -(noinput10s)> slideshow
-# the logic must check for drawTransition's return value (0 if incomplete, 1 if complete)
-
+# configurations
 DRAW_FPS_OVERLAY = True
 
 if __name__ == "__main__":
-  # initialize step
-  pygame.init()
-  scene_mgr = SceneManager()
-  clock = pygame.time.Clock()
+    # initialization step
+    pygame.init()
+    input_mgr = InputManager()
+    state_eng = StateEngine()
+    draw_mgr = DrawManager()
+    clock = pygame.time.Clock()
 
-  # load first scene
-  initial_scene = TitleScene()
-  scene_mgr.loadScene(initial_scene)
+    while not input_mgr.keyboard_forcequit:
+        # limit frontend graphics and logic to roughly 60 Hz
+        dt = clock.tick(60)/1000.0
 
-  while True:
-    # limit frontend graphics and logic to roughly 60 Hz
-    dt = clock.tick(60)/1000.0
+        # --- Main Loop ---
+        # update inputs, this will automatically set flags we need to check for main logic
+        input_mgr.update(dt)
 
-    # --- Main Loop ---
+        # now do main logic depending on state
+        state_eng.update(input_mgr, draw_mgr)
 
-    # do scene specific logic (also depends on input)
-    # then draw the result to the screen
-    if DRAW_FPS_OVERLAY:
-      scene_mgr.update(dt, clock.get_fps())
-    else:
-      scene_mgr.update(dt, None)
+        # now draw updated scene objects to the screen
+        draw_mgr.update(dt, clock.get_fps() if DRAW_FPS_OVERLAY else None)
 
-    # -----------------
+        # -----------------

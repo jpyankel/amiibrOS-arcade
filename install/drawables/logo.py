@@ -1,11 +1,11 @@
 import pygame
-from .uielement import UIElement, resource_path
+from .drawable import Drawable, resource_path
 from pathlib import Path
 
 #logo_path = str(resource_path / "title-logo.png")
 tlogo_path = str(resource_path / "title-logo-transparent.png")
 
-class Logo(UIElement):
+class Logo(Drawable):
   def __init__(self, pos, name):
     super().__init__(pos, name)
     self.initPPA(tlogo_path)
