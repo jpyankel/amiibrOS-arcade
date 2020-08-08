@@ -2,7 +2,7 @@ import pygame
 from pathlib import Path
 import configparser
 
-root_path = (Path(__file__).parent).resolve()
+root_path = (Path(__file__).parent.parent).resolve()
 data_path = root_path / "data"
 controller_path = data_path / "gamepads.config"
 
@@ -21,10 +21,7 @@ class InputManager:
         # list of "pretend" gamepads that hold processed values
         self.gamepads = []
 
-        self.refreshJoysticks()
-
-        # runtime flags checked by this and main.py
-        self.keyboard_forcequit = False
+        self.reset()
 
     def update(self, dt):
         for event in pygame.event.get():
@@ -96,6 +93,24 @@ class InputManager:
                 count += 1
 
         return count
+
+    def scan(self, charID):
+        self.last_scan = charID
+        self.scan_complete = True
+
+    def get_scan(self):
+        self.scan_complete = False
+        return self.last_scan
+
+    def reset(self):
+        self.last_scan = ""
+
+        # runtime flags checked by this, main.py, state_engine, etc.
+        self.keyboard_forcequit = False
+        self.scan_complete = False
+
+        # start by updating which joysticks are connected
+        self.refreshJoysticks()
 
 
 class GamePad:

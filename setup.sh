@@ -104,10 +104,10 @@ mkdir -p $mntpath/etc/systemd/system/multi-user.target.wants
 ln -s $installpath/systemd/amiibrOS.service \
   $mntpath/etc/systemd/system/multi-user.target.wants/
 
-# === copy various user configurations and apps ===
+# === copy boot configurables ===
 echo "Transfering user config&apps..."
-cp config/config.txt $mntpath/boot/
-cp config/wpa_supplicant.conf $mntpath/boot/
+cp boot/config.txt $mntpath/boot/
+cp boot/wpa_supplicant.conf $mntpath/boot/
 
 # === create the first-time init file ===
 touch $mntpath/first-run

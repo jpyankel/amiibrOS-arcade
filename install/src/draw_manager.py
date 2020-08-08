@@ -29,3 +29,6 @@ class DrawManager:
 
     def addDrawable(self, d):
         self.drawables.append(d)
+
+    def reset(self):
+        pass

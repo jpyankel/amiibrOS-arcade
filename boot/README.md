@@ -1,6 +1,7 @@
-# config
+# boot
 This subfolder contains various configuration files for customizing your
-amiibrOS setup.
+amiibrOS setup. All of these files are copied automatically to your Raspberry
+Pi's /boot folder.
 
 ## wpa_supplicant.conf
 This file is very important to the setup: In order for the amiibrOS first time
@@ -16,5 +17,5 @@ to auto-connect to your WIFI).
 Make sure to leave quotation marks `""` surrounding your replacement SSID and
 PSK.
 
-4. Save As wpa_supplicant.conf. Or save your changes and rename the file to
+5. Save As wpa_supplicant.conf. Or save your changes and rename the file to
 wpa_supplicant.conf

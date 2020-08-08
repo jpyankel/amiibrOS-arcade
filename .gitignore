@@ -5,7 +5,10 @@ img/*.img
 *.pyc
 
 # Ignore personal settings and apps (privacy)
-config/wpa_supplicant.conf
-app/*
-!app/README.md
+boot/wpa_supplicant.conf
+install/app/*
+!install/app/README.md
 install/data/*.config
+
+# Ignore editor stuff
+.vscode/

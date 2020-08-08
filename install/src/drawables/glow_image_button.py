@@ -5,8 +5,8 @@ from pathlib import Path
 button_path = resource_path / "button"
 
 class GlowImageButton(Drawable):
-  def __init__(self, pos, name, imgbasename):
-    super().__init__(pos, name)
+  def __init__(self, name, pos, imgbasename):
+    super().__init__(name, pos)
     path = button_path / (imgbasename + "-reg.png")
     self.initPPA(str(path))
 

@@ -2,11 +2,11 @@ import pygame
 from pathlib import Path
 
 # path to resources folder; various images/fonts are stored here
-root_path = (Path(__file__).parent.parent).resolve()
+root_path = (Path(__file__).parent.parent.parent).resolve()
 resource_path = root_path / "resources"
 
 class Drawable:
-    def __init__(self, pos, name):
+    def __init__(self, name, pos):
         # identifier for debugging
         self.name = name
 

@@ -19,9 +19,8 @@ app/).
 ## Folder Structure
 Most subfolders will have a README with more information about the folder's
 purpose. A brief overview of the project's root folder layout is given here:
-* app: Contains amiibrOS apps by character ID.
-* src: Contains amiibrOS system software source files.
+* install: Contains amiibrOS installation.
 * img: Contains the .img file for Raspbian, which will be modified by the setup
 scripts.
-* config: Contains any configuration files you (the amiibrOS user) should check
-and potentially modify.
+* boot: Contains a few boot configuration files you (the amiibrOS user) should
+        modify.

@@ -22,10 +22,11 @@ elif [[ -e "second-run" ]]; then
   echo -e "second-run found!\nContinuing first time setup..."
   # install various 3rd party software
   apt-get update
-  apt-get -y install python3-pygame
+  apt-get -y install python3-pip
+  python3 -m pip install -r /usr/bin/amiibrOS/src/py-req.txt
   rm second-run
   reboot
 else
   echo -e "No first-run found. Starting amiibrOS..."
-  python3 /usr/bin/amiibrOS/main.py
+  python3 /usr/bin/amiibrOS/src/main.py
 fi

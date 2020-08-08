@@ -4,7 +4,7 @@ from .drawing_consts import *
 
 class Background(Drawable):
     def __init__(self, name):
-        super().__init__((0,0), name)
+        super().__init__(name, (0, 0))
         self.surf = pygame.Surface(res)
 
         self.surf.fill(pygame.Color(defaultWhite))
