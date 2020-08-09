@@ -6,6 +6,7 @@ from draw_manager import DrawManager
 
 # configurations
 DRAW_FPS_OVERLAY = True
+UI_DEVELOPMENT = False
 
 # consts
 CHAR_ID_LEN = 8
@@ -90,10 +91,10 @@ def main(scanner_pid, switch_pid, scanner_re):
             app = app_folder/(charID + ".sh") # and this file too
 
             # pygame deinit, cleanup, etc.
-            pygame.quit()
             input_mgr.reset()
             state_eng.reset()
             draw_mgr.reset()
+            pygame.quit()
 
             # launch the process indicated by charID
             app_pid = os.fork()
@@ -107,7 +108,37 @@ def main(scanner_pid, switch_pid, scanner_re):
             # wait until the process dies and then show amiibrOS again
             os.waitpid(app_pid, 0)
 
+# this function is for testing and develop the UI only.
+# it is like main(), but replaces or removes all functionalities that a regular PC can't accommodate
+def testmain():
+    pygame.init()
+    input_mgr = InputManager()
+    state_eng = StateEngine()
+    draw_mgr = DrawManager()
+    clock = pygame.time.Clock()
+
+    while not input_mgr.keyboard_forcequit:
+        # limit frontend graphics and logic to roughly 60 Hz
+        dt = clock.tick(60)/1000.0
+
+        # --- Main Loop ---
+
+        # update inputs, this will automatically set flags we need to check for main logic
+        input_mgr.update(dt)
+
+        # now do main logic depending on state
+        state_eng.update(input_mgr, draw_mgr)
+
+        # now draw updated scene objects to the screen
+        draw_mgr.update(dt, clock.get_fps() if DRAW_FPS_OVERLAY else None)
+
+        # -----------------
+
 if __name__ == "__main__":
+    if UI_DEVELOPMENT:
+        testmain()
+        sys.exit()
+
     # fork the power-switch monitor process
     switch_pid = os.fork()
 

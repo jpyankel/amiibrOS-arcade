@@ -11,8 +11,7 @@ class DrawManager:
         self.stat_font = pygame.font.Font(None, 30)
         self.stat_color = pygame.Color("black")
 
-        # list of objects in the order they are drawn
-        self.drawables = []
+        self.reset()
 
     def update(self, dt, fps):
         # draw all scene objects
@@ -31,4 +30,5 @@ class DrawManager:
         self.drawables.append(d)
 
     def reset(self):
-        pass
+        # list of objects in the order they are drawn
+        self.drawables = []

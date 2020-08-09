@@ -29,17 +29,22 @@ class Background(Drawable):
 
     def draw(self, dt, parent, offset):
         if self.fade_b_w and self.anim_time_elapsed < self.fade_b_w_dur:
-            targetColor = pygame.Color(defaultWhite)
-
-            r = targetColor.r * self.anim_time_elapsed / self.fade_b_w_dur
-            g = targetColor.g * self.anim_time_elapsed / self.fade_b_w_dur
-            b = targetColor.b * self.anim_time_elapsed / self.fade_b_w_dur
-
-            newColor = (r, g, b)
+            newColor = lerpColor(pygame.Color(defaultWhite), self.anim_time_elapsed,
+                                 self.fade_b_w_dur)
             self.surf.fill(newColor)
-
             self.anim_time_elapsed += dt
         elif self.fade_b_w:
             self.endFadeBlackWhite()
 
         super().draw(dt, parent, offset)
+
+def lerpColor (targetColor, currentValue, targetValue):
+    interp = currentValue / targetValue
+
+    r = targetColor.r * interp
+    g = targetColor.g * interp
+    b = targetColor.b * interp
+
+    newColor = (r, g, b)
+
+    return newColor
