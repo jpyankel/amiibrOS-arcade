@@ -28,5 +28,6 @@ elif [[ -e "second-run" ]]; then
   reboot
 else
   echo -e "No first-run found. Starting amiibrOS..."
+  python3 /usr/bin/amiibrOS/src/powerswitch.py &
   python3 /usr/bin/amiibrOS/src/main.py
 fi

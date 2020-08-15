@@ -1,60 +1,45 @@
-"""
-    Spawned from main.py to monitor power switch GPIO in order to shutdown the RPI.
-
-    Hold the power switch for SHUTDOWN_HOLD_TIME to turn RPI off. Press for less than that duration
-        to reboot.
-
-    Joseph Yankel (jpyankel@gmail.com)
-"""
-
 import threading, subprocess
 import RPi.GPIO as GPIO
+import os
+import evdev
 
 SHUTDOWN_HOLDTIME = 3.0 # Number of seconds we need to hold to shutdown
 WAKE_PIN = 5 # GPIO Pin which we use for wake/shutdown functionality
+EXIT_KEY = evdev.ecodes.KEY_ESC
+KEYDOWN = 1
+KEYUP = 0
 
-# Mutex used to prevent both threads from executing shutdown/reboot at once:
-shutdown_lock = threading.Lock()
-
-"""
-    Waits for GPIO WAKE_PIN to go LOW (shorted to GND) before timing this state and beginning the
-        shutdown or reboot process.
-"""
 def main():
-    # Use board pin numberings:
+    # use board pin numberings
     GPIO.setmode(GPIO.BOARD)
         
-    # Set wake pin to be an input pin pulled to high (3.3V):
+    # set wake pin to be an input pin pulled to high (3.3V)
     GPIO.setup(WAKE_PIN, GPIO.IN)
-        
-    # Wait for wake pin to be brought low:
-    GPIO.wait_for_edge(WAKE_PIN, GPIO.FALLING)
 
-    # Also start timer to perform shutdown after SHUTDOWN_HOLDTIME seconds:
-    shutdown_timer = threading.Timer(SHUTDOWN_HOLDTIME, shutdown)
-    shutdown_timer.start()
+    # fake this device's capabilities, it should appear as a keyboard
+    uinput = evdev.UInput.from_device("/dev/input/event0", name='powerswitch', vendor=0x413C, product=0x2501, version=0x111)
 
-    # Wait until user releases switch:
-    GPIO.wait_for_edge(WAKE_PIN, GPIO.RISING)
+    while True:
+        # wait for wake pin to be brought low
+        GPIO.wait_for_edge(WAKE_PIN, GPIO.FALLING)
+        uinput.write(evdev.ecodes.EV_KEY, EXIT_KEY, KEYDOWN)
+        uinput.syn()
 
-    # Button has been released, attempt to reboot (note that the timer thread
-    #   will already have called shutdown if SHUTDOWN_HOLDTIME has passed):
-    reboot()
+        # also start timer to perform shutdown after SHUTDOWN_HOLDTIME seconds
+        shutdown_timer = threading.Timer(SHUTDOWN_HOLDTIME, shutdown)
+        shutdown_timer.start()
 
-def reboot():
-    # Make sure this thread is the only one performing reboot/shutdown:
-    shutdown_lock.acquire()
+        # wait until user releases switch
+        GPIO.wait_for_edge(WAKE_PIN, GPIO.RISING)
 
-    # Best practice to perform cleanup before program termination:
-    GPIO.cleanup()
+        # cancel our previous shutdown timer if it hasn't shutdown yet
+        shutdown_timer.cancel()
 
-    # Reboot:
-    subprocess.call('reboot', shell=False)
+        # record as an ESC key press
+        uinput.write(evdev.ecodes.EV_KEY, EXIT_KEY, KEYUP)
+        uinput.syn()
 
 def shutdown():
-    # Make sure this thread is the only one performing reboot/shutdown:
-    shutdown_lock.acquire()
-
     # Best practice to perform cleanup before program termination:
     GPIO.cleanup()
 

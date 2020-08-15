@@ -16,6 +16,7 @@ class State(Enum):
     TITLE_MENU = 1
     TITLE_MENU_SCANIMATION_SUCCESS = 2
     TITLE_MENU_SCANIMATION_FAILURE = 3
+    EXIT = 4
 
 class StateEngine:
     def __init__ (self):
@@ -24,10 +25,27 @@ class StateEngine:
             State.TITLE_MENU : self.title_menu_logic,
             State.TITLE_MENU_SCANIMATION_SUCCESS : self.title_menu_scanimation_success_logic,
             State.TITLE_MENU_SCANIMATION_FAILURE : self.title_menu_scanimation_failure_logic,
+            State.EXIT : self.exit_logic
         }
 
-        # Initialize various state variables
-        self.reset()
+        # various state variables for different logic states ---
+        self.startup_init = False
+        self.scan_success = False
+        self.success_char_id = None
+        self.scanner_icon_anim_started = False
+        self.exiting = False
+        self.exit_ready = False
+        # ---
+
+        # various drawables we need ---
+        self.title_bg = None
+        self.title_logo = None
+        self.scanner_icon = None
+        self.scan_prompt = None
+        self.fadeout_foreground = None
+        # ---
+
+        self.state = State.STARTUP
 
     def update(self, input_mgr, draw_mgr):
         # depending on our state, we branch to a different function
@@ -89,8 +107,7 @@ class StateEngine:
                 # transition to a temporary state to block input and prevent repeated animations
                 self.state = State.TITLE_MENU_SCANIMATION_FAILURE
             
-            self.success_char_id = charID
-            
+            self.success_char_id = charID            
 
     def title_menu_scanimation_success_logic(self, input_mgr, draw_mgr):
         # wait until scan success animation finishes
@@ -107,23 +124,18 @@ class StateEngine:
             # self.state = State.TITLE_MENU
         self.state = State.TITLE_MENU
 
-    def reset(self):
-        # various state variables for different logic states ---
-        self.startup_init = False
-        self.scan_success = False
-        self.success_char_id = None
-        self.scanner_icon_anim_started = False
-        # ---
-
-        # various drawables we need ---
-        self.title_bg = None
-        self.title_logo = None
-        self.scanner_icon = None
-        self.scan_prompt = None
-        self.fadeout_foreground = None
-        # ---
-
-        self.state = State.STARTUP
+    def exit_logic(self, input_mgr, draw_mgr):
+        # wait until scan success animation finishes
+        if not self.fadeout_foreground.animating:
+            self.exit_ready = True
+    
+    def exit_sequence(self, input_mgr, draw_mgr):
+        self.exiting = True
+        self.fadeout_foreground = FadeOutForeground("fadeout foreground")
+        draw_mgr.addDrawable(self.fadeout_foreground)
+        self.fadeout_foreground.playFadeIn(FADE_OUT_DURATION)
+        # switch to the exit state:
+        self.state = State.EXIT
 
     
 def app_exists (charID):

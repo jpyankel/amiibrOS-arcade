@@ -1,27 +1,24 @@
 import pygame
-from pathlib import Path
-import configparser
-
-root_path = (Path(__file__).parent.parent).resolve()
-data_path = root_path / "data"
-controller_path = data_path / "gamepads.config"
 
 # tolerance before abs() of any joystick axis value is interpreted as 1 or -1
 ANALOG_TOLERANCE = 0.5
 
 class InputManager:
-    def __init__(self):
-        # load joystick config files from data/controllers.config
-        self.gamepadConfigs = configparser.ConfigParser()
-        self.gamepadConfigs.read(str(controller_path))
-
+    def __init__(self, gamepadConfigs):
         # max number of joysticks is 4
         self.joysticks = []
 
         # list of "pretend" gamepads that hold processed values
         self.gamepads = []
 
-        self.reset()
+        self.last_scan = ""
+
+        # runtime flags checked by this, main.py, state_engine, etc.
+        self.keyboard_forcequit = False
+        self.scan_complete = False
+
+        # start by updating which joysticks are connected
+        self.refreshJoysticks(gamepadConfigs)
 
     def update(self, dt):
         for event in pygame.event.get():
@@ -31,7 +28,7 @@ class InputManager:
                                 pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP}:
                 self.handleJoystick(event)
 
-    def refreshJoysticks(self):
+    def refreshJoysticks(self, gamepadConfigs):
         # disconnect all connected joysticks from the event queue
         for j in self.joysticks:
             j.quit()
@@ -52,7 +49,7 @@ class InputManager:
             self.joysticks.append(joystick)
 
             # try to configure virtual gamepad
-            gamepad = GamePad(joystick.get_name(), self.gamepadConfigs)
+            gamepad = GamePad(joystick.get_name(), gamepadConfigs)
             self.gamepads.append(gamepad)
 
     def handleKeyboard(self, event):
@@ -101,17 +98,6 @@ class InputManager:
     def get_scan(self):
         self.scan_complete = False
         return self.last_scan
-
-    def reset(self):
-        self.last_scan = ""
-
-        # runtime flags checked by this, main.py, state_engine, etc.
-        self.keyboard_forcequit = False
-        self.scan_complete = False
-
-        # start by updating which joysticks are connected
-        self.refreshJoysticks()
-
 
 class GamePad:
     def __init__(self, name, gamepadConfigs):

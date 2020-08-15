@@ -5,3 +5,4 @@ Adafruit-PlatformDetect == 2.14.0
 Adafruit-PureIO == 1.1.5
 RPi.GPIO == 0.7.0
 pygame == 1.9.4.post1
+evdev == 1.3.0
