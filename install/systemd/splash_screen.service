@@ -7,6 +7,8 @@ After=local-fs.target
 ExecStart=/usr/bin/python3 /usr/bin/amiibrOS/src/splash_screen.py -img splash_screen.png
 StandardInput=tty
 StandardOutput=tty
+User=root
+Group=root
 
 [Install]
 WantedBy=sysinit.target

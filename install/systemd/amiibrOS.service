@@ -8,6 +8,8 @@ Type=oneshot
 ExecStart=/usr/bin/amiibrOS/systemd/amiibrOS.sh
 TimeoutStartSec=0
 StandardInput=tty
+User=root
+Group=root
 
 [Install]
 WantedBy=multi-user.target

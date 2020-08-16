@@ -13,7 +13,7 @@ root_path = (Path(__file__).parent.parent).resolve()
 app_path = root_path / "app"
 resource_path = root_path / "resources"
 
-SCAN_SUCCESS_VOLUME = 0.25
+SCAN_SUCCESS_VOLUME = 0.15
 MUSIC_VOLUME = 1.0
 MUSIC_FADE_OUT_DURATION = 1000
 
