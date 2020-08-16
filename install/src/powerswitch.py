@@ -17,7 +17,8 @@ def main():
     GPIO.setup(WAKE_PIN, GPIO.IN)
 
     # fake this device's capabilities, it should appear as a keyboard
-    uinput = evdev.UInput.from_device("/dev/input/event0", name='powerswitch', vendor=0x413C, product=0x2501, version=0x111)
+    uinput = evdev.UInput.from_device("/dev/input/event0", name='powerswitch', vendor=0x413C,
+                                      product=0x2501, version=0x111)
 
     while True:
         # wait for wake pin to be brought low

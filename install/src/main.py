@@ -6,7 +6,7 @@ from state_engine import StateEngine
 from draw_manager import DrawManager
 
 # configurations
-DRAW_FPS_OVERLAY = True
+DRAW_FPS_OVERLAY = False
 
 # consts
 CHAR_ID_LEN = 8
@@ -53,14 +53,12 @@ def main(scanner_pid):
     # we are the parent process in this function
     global scanner_data_ready, scanner_data, scanner_re
 
-    # --- load all one-time configurations ---
+    # --- one time setup ---
     # load joystick config files from data/controllers.config
     gamepadConfigs = configparser.ConfigParser()
     with open(str(controller_path)) as conf:
         gamepadConfigs.read_file(conf)
-    # --- ---
 
-    # --- one time setup ---
     # enable handling of scanner-data-ready signal (SIGUSR1)
     signal.signal(signal.SIGUSR1, handle_scanner)
     # --- ---
@@ -72,6 +70,9 @@ def main(scanner_pid):
         state_eng = StateEngine()
         draw_mgr = DrawManager()
         clock = pygame.time.Clock()
+
+        # hide mouse
+        pygame.mouse.set_visible(False)
 
         while not (state_eng.scan_success or state_eng.exit_ready):
             # limit frontend graphics and logic to roughly 60 Hz

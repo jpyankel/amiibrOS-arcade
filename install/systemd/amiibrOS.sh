@@ -24,6 +24,9 @@ elif [[ -e "second-run" ]]; then
   apt-get update
   apt-get -y install python3-pip
   python3 -m pip install -r /usr/bin/amiibrOS/src/py-req.txt
+  # enable and start splash_screen.service
+  systemctl enable /usr/bin/amiibrOS/systemd/splash_screen.service
+  systemctl start splash_screen.service
   rm second-run
   reboot
 else

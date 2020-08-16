@@ -94,7 +94,7 @@ mkdir -p $mntpath/usr/bin/amiibrOS
 cp -r install/* $mntpath/$installpath/
 
 # enable console output of systemd service messages
-ln -sf $installpath/systemd/system.conf $mntpath/etc/systemd/
+#ln -sf $installpath/systemd/system.conf $mntpath/etc/systemd/
 
 # install amiibrOS systemd service
 ln -s $installpath/systemd/amiibrOS.service $mntpath/etc/systemd/system/

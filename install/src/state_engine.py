@@ -2,6 +2,7 @@ from enum import Enum
 from drawables import *
 import os
 from pathlib import Path
+import pygame
 
 BACKGROUND_FADE_IN_DURATION = 2.0
 FADE_OUT_DURATION = 1.0
@@ -10,6 +11,11 @@ SCANNER_ICON_FADE_IN_DURATION = 1.0
 
 root_path = (Path(__file__).parent.parent).resolve()
 app_path = root_path / "app"
+resource_path = root_path / "resources"
+
+SCAN_SUCCESS_VOLUME = 0.25
+MUSIC_VOLUME = 1.0
+MUSIC_FADE_OUT_DURATION = 1000
 
 class State(Enum):
     STARTUP = 0
@@ -45,6 +51,12 @@ class StateEngine:
         self.fadeout_foreground = None
         # ---
 
+        # sound effects and music
+        pygame.mixer.music.load(str(resource_path / "amiibrOS_menu_theme.wav"))
+        pygame.mixer.music.set_volume(MUSIC_VOLUME)
+        self.scan_success_sfx = pygame.mixer.Sound(str(resource_path / "amiibrOS_scan_success.wav"))
+        self.scan_success_sfx.set_volume(SCAN_SUCCESS_VOLUME)
+
         self.state = State.STARTUP
 
     def update(self, input_mgr, draw_mgr):
@@ -71,6 +83,9 @@ class StateEngine:
             self.scan_prompt = ScanPrompt("scan prompt", (1246,434))
             self.scan_prompt.setAlpha(0)
             draw_mgr.addDrawable(self.scan_prompt)
+
+            # play main menu music
+            pygame.mixer.music.play(-1)
 
             self.startup_init = True
 
@@ -99,6 +114,10 @@ class StateEngine:
                 self.fadeout_foreground = FadeOutForeground("fadeout foreground")
                 draw_mgr.addDrawable(self.fadeout_foreground)
                 self.fadeout_foreground.playFadeIn(FADE_OUT_DURATION)
+                # play scan_success sound effect
+                self.scan_success_sfx.play()
+                # fade-out music
+                pygame.mixer.music.fadeout(MUSIC_FADE_OUT_DURATION)
                 # transition to a temporary state to block input and prevent repeated animations
                 self.state = State.TITLE_MENU_SCANIMATION_SUCCESS
             else:
@@ -134,6 +153,8 @@ class StateEngine:
         self.fadeout_foreground = FadeOutForeground("fadeout foreground")
         draw_mgr.addDrawable(self.fadeout_foreground)
         self.fadeout_foreground.playFadeIn(FADE_OUT_DURATION)
+        # fade out music
+        pygame.mixer.music.fadeout(MUSIC_FADE_OUT_DURATION)
         # switch to the exit state:
         self.state = State.EXIT
 
