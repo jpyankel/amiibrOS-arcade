@@ -10,5 +10,8 @@ install/app/*
 !install/app/README.md
 install/data/*.config
 
+# Ignore virtual environment (highly recommended to use your own)
+venv/
+
 # Ignore editor stuff
 .vscode/
