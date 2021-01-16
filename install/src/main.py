@@ -7,6 +7,7 @@ from draw_manager import DrawManager
 
 # configurations
 DRAW_FPS_OVERLAY = False
+LINUX_DEBUG = True
 
 # consts
 CHAR_ID_LEN = 8
@@ -156,31 +157,37 @@ def main(scanner_pid):
             signal.signal(signal.SIGUSR1, handle_scanner) # reset the signal handler
 
 def amiibrOS_exit(scanner_pid, scanner_re):
-    # first, tell scanner to exit
-    os.kill(scanner_pid, signal.SIGTERM)
-    # wait for scanner to terminate
-    os.waitpid(scanner_pid, 0)
-    # close scanner pipe
-    os.close(scanner_re)
+    if not LINUX_DEBUG:
+        # first, tell scanner to exit
+        os.kill(scanner_pid, signal.SIGTERM)
+        # wait for scanner to terminate
+        os.waitpid(scanner_pid, 0)
+        # close scanner pipe
+        os.close(scanner_re)
+    
     # finish exiting
     sys.exit()
 
 if __name__ == "__main__":
-    # set up a pipe for communication with the scanner process (scanner writes, parent reads)
-    # it is required to be non-blocking since we read while the UI is running in real time
-    scanner_re, scanner_wr = os.pipe2(os.O_NONBLOCK)
+    scanner_pid = None
 
-    # fork the scanner process
-    scanner_pid = os.fork()
+    if not LINUX_DEBUG:
+        # set up a pipe for communication with the scanner process (scanner writes, parent reads)
+        # it is required to be non-blocking since we read while the UI is running in real time
+        scanner_re, scanner_wr = os.pipe2(os.O_NONBLOCK)
 
-    if not scanner_pid:
-        # close the unused read-end of the pipe for the child process
-        os.close(scanner_re)
-        # we are the child process now
-        # launch the scanner program, send it the write-end of the pipe
-        os.execv(sys.executable, ["python3", (src_path/"scanner.py").resolve(), str(scanner_wr)])
+        # fork the scanner process
+        scanner_pid = os.fork()
 
-    # close the unused write-end of the pipe (for the parent)
-    os.close(scanner_wr)
+        if not scanner_pid:
+            # close the unused read-end of the pipe for the child process
+            os.close(scanner_re)
+
+            # we are the child process now
+            # launch the scanner program, send it the write-end of the pipe
+            os.execv(sys.executable, ["python3", (src_path/"scanner.py").resolve(), str(scanner_wr)])
+
+        # close the unused write-end of the pipe (for the parent)
+        os.close(scanner_wr)
 
     main(scanner_pid)
